@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RNurse - Nursing Exam Prep</title>
+    <style>
+        body { font-family: 'Arial', sans-serif; margin: 0; padding: 0; background: white; color: #333; animation: fadeIn 1s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .screen { display: none; max-width: 800px; margin: 20px auto; padding: 20px; background: white; border: 2px solid #006400; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,100,0,0.2); animation: slideUp 0.5s ease-out; }
+        .login-screen { display: none; height: 100vh; display: flex; align-items: center; justify-content: center; background: white; color: #333; }
+        .login-screen.active { display: flex; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .active { display: block; }
+        header { background: #006400; color: white; padding: 15px; text-align: center; border-radius: 15px 15px 0 0; font-size: 1.5em; }
+        .progress-bar { width: 100%; height: 25px; background-color: #e0e0e0; border-radius: 12px; overflow: hidden; margin: 10px 0; animation: grow 2s ease-in-out; }
+        @keyframes grow { from { width: 0%; } to { width: 100%; } }
+        .progress-fill { height: 100%; background: #006400; width: 45%; transition: width 0.5s; }
+        .stats { display: flex; justify-content: space-around; margin: 20px 0; }
+        .stat { text-align: center; background: #f8f9fa; padding: 10px; border-radius: 10px; border: 1px solid #006400; }
+        button { background: #006400; color: white; border: none; padding: 12px 25px; border-radius: 25px; cursor: pointer; margin: 5px; font-weight: bold; transition: transform 0.2s, box-shadow 0.2s; }
+        button:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(0,100,0,0.3); }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        .tabs { display: flex; justify-content: space-around; background: #e8f5e8; padding: 10px; border-radius: 10px; border: 1px solid #006400; }
+        .tab { cursor: pointer; padding: 10px; border-radius: 10px; transition: background 0.3s; }
+        .tab.active { background: #006400; color: white; }
+        input, select { width: 100%; padding: 10px; margin: 5px 0; border: 2px solid #ddd; border-radius: 10px; transition: border-color 0.3s; }
+        input:focus, select:focus { border-color: #006400; outline: none; }
+        #timer { font-weight: bold; color: #006400; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        #feedback { margin-top: 20px; display: none; background: #e8f5e8; padding: 10px; border-radius: 10px; border: 1px solid #006400; }
+        .quiz-summary { margin-top: 20px; background: #fff3cd; padding: 15px; border-radius: 10px; border: 1px solid #006400; }
+        .locked { color: #dc3545; font-weight: bold; animation: shake 0.5s; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        .icon { font-size: 1.2em; margin-right: 5px; }
+        footer { text-align: center; padding: 10px; background: #f8f9fa; border-radius: 0 0 15px 15px; font-size: 0.9em; border-top: 1px solid #006400; }
+        .login-form { background: white; padding: 40px; border-radius: 20px; border: 2px solid #006400; box-shadow: 0 10px 30px rgba(0,100,0,0.3); max-width: 400px; width: 100%; text-align: center; }
+        .login-form h2 { margin-bottom: 20px; color: #006400; }
+        #offlineMessage { color: red; font-weight: bold; text-align: center; padding: 20px; }
+    </style>
+</head>
+<body>
+    <div id="offlineMessage" style="display: none;">🚫 Internet Required: Please connect to mobile data to use RNurse.</div>
+
+    <!-- Login Screen (Full-Screen) -->
+    <div id="login" class="login-screen active">
+        <div class="login-form">
+            <h1>🏥 RNurse</h1>
+            <h2>🔐 Login</h2>
+            <p style="font-size: 0.9em; color: #666;">New user? Sign up first to create an account.</p>
+            <input type="email" placeholder="Email" id="email"><br>
+            <input type="password" placeholder="Password" id="password"><br>
+            <button onclick="login()" id="loginBtn">Login</button>
+            <button onclick="showScreen('signup')" id="signupBtn">Sign Up</button>
+            <p><a href="#">Forgot Password?</a></p>
+            <p id="loginError" style="color: red; display: none;">Invalid email or password. Please sign up if new.</p>
+        </div>
+    </div>
+
+    <!-- Sign Up / Profile Creation Screen -->
+    <div id="signup" class="screen">
+        <header>🏥 RNurse</header>
+        <h2>📝 Create Profile</h2>
+        <input type="text" placeholder="Full Name" id="name"><br>
+        <input type="email" placeholder="Email" id="signupEmail"><br>
+        <input type="password" placeholder="Password" id="signupPassword"><br>
+        <select id="profession">
+            <option>Student Nurse</option>
+            <option>Registered Nurse</option>
+            <option>Midwife</option>
+            <option>Public Health Professional</option>
+        </select><br>
+        <select id="year">
+            <option>Year 1</option>
+            <option>Year 2</option>
+            <option>Year 3</option>
+            <option>Year 4</option>
+        </select><br>
+        <input type="text" placeholder="Exam Focus (e.g., Nursing Council)" id="exam"><br>
+        <button onclick="createProfile()" id="createBtn">Save Profile</button>
+        <button onclick="showScreen('login')" id="backBtn">Back to Login</button>
+        <p id="signupError" style="color: red; display: none;">Email already exists. Try logging in.</p>
+        <footer>Founded by Wabi The Tech Nurse | Contact: rnurse@gmail.com | <a href="https://wa.me/2347052356638" target="_blank">WhatsApp Support</a></footer>
+    </div>
+
+    <!-- Dashboard Screen -->
+    <div id="dashboard" class="screen">
+        <header>🏥 RNurse</header>
+        <p>Welcome, <span id="userName">User</span> | <button onclick="logout()" id="logoutBtn">Logout</button></p>
+        <h2>📊 Your Dashboard</h2>
+        <h3>Overall Progress</h3>
+        <div class="progress-bar"><div class="progress-fill"></div></div>
+        <p>45% Complete</p>
+        <div class="stats">
+            <div class="stat"><h4>Questions Attempted</h4><p>200</p></div>
+            <div class="stat"><h4>Accuracy</h4><p>75%</p></div>
+        </div>
+        <button onclick="showScreen('mcq')" id="quizBtn">Start Practice Exam</button>
+        <button onclick="showScreen('flashcards')" id="flashBtn">View Flashcards</button>
+        <button onclick="alert('Review Marked Questions')" id="reviewBtn">Review Marked Questions</button>
+        <div class="chart">
+            <h3>Topic Strengths & Weaknesses</h3>
+            <p>Medical-Surgical: 80% | Pharmacology: 60% | Mental Health: 70%</p>
+        </div>
+        <div class="tabs">
+            <div class="tab active">Home</div>
+            <div class="tab" onclick="showScreen('mcq')">Practice</div>
+            <div class="tab" onclick="showScreen('flashcards')">Tools</div>
+            <div class="tab" onclick="showScreen('progress')">Progress</div>
+        </div>
+        <p class="locked">Premium features require weekly subscription. <button onclick="subscribe()" id="subBtn">Subscribe Now (1,000 Naira/week)</button></p>
+        <footer>Founded by Wabi The Tech Nurse | Contact: rnurse@gmail.com | <a href="https://wa.me/2347052356638" target="_blank">WhatsApp Support</a></footer>
+    </div>
+
+    <!-- MCQ Practice Screen -->
+    <div id="mcq" class="screen">
+        <header>🧠 MCQ Practice</header>
+        <p>Subject: <select id="subject" onchange="resetQuiz()">
+            <option value="Medical-Surgical">Medical-Surgical Nursing</option>
+            <option value="Mental Health">Mental Health</option>
+            <option value="Midwifery">Midwifery</option>
+            <option value="Public Health">Public Health</option>
+            <option value="Pharmacology">Pharmacology</option>
+            <option value="Anatomy">Anatomy</option>
+        </select> | <span id="timer">Time: 30:00</span></p>
+        <div class="question" id="questionArea"></div>
+        <button onclick="previousQuestion()" id="prevBtn">Previous</button>
+        <button onclick="nextQuestion()" id="nextBtn">Next</button>
+        <button onclick="submitAnswer()" id="submitBtn">Submit</button>
+        <button onclick="markForReview()" id="markBtn">Mark for Review</button>
+        <button onclick="finishQuiz()" id="finishBtn">Finish Quiz & View Answers</button>
+        <div id="feedback"></div>
+        <div id="quizSummary" class="quiz-summary" style="display: none;"></div>
+        <button onclick="showScreen('dashboard')" id="backDashBtn">Back to Dashboard</button>
+        <footer>Founded by Wabi The Tech Nurse | Contact: rnurse@gmail.com | <a href="https://wa.me/2347052356638" target="_blank">WhatsApp Support</a></footer>
+    </div>
+
+    <!-- Flashcards Screen (Study Tools) -->
+    <div id="flashcards" class="screen">
+        <header>📚 Flashcards</header>
+        <h2>Key Terms</h2>
+        <div id="flashcard">Click to flip: <strong>Diuretic</strong> (Front)</div>
+        <button onclick="flipCard()" id="flipBtn">Flip</button>
+        <button onclick="nextCard()" id="nextCardBtn">Next Card</button>
+        <button onclick="showScreen('dashboard')" id="backFlashBtn">Back to Dashboard</button>
+        <footer>Founded by Wabi The Tech Nurse | Contact: rnurse@gmail.com | <a href="https://wa.me/2347052356638" target="_blank">WhatsApp Support</a></footer>
+    </div>
+
+    <!-- Progress Tracking Screen -->
+    <div id="progress" class="screen">
+        <header>📈 Progress Tracking</header>
+        <h2>Your Progress</h2>
+        <p>Detailed Chart: Accuracy by Topic</p>
+        <ul>
+            <li>Medical-Surgical: 80%</li>
+            <li>Pharmacology: 60%</li>
+            <li>Mental Health: 70%</li>
+        </ul>
+        <button onclick="alert('Report downloaded!')" id="downloadBtn">Download Report</button>
+        <button onclick="showScreen('dashboard')" id="backProgBtn">Back to Dashboard</button>
+        <footer>Founded by Wabi The Tech Nurse | Contact: rnurse@gmail.com | <a href="https://wa.me/2347052356638" target="_blank">WhatsApp Support</a></footer>
+    </div>
+
+    <script>
+        let userData = { name: '', profession: '', year: '', exam: '', subscribed: false };
+        let timeLeft = 1800;
+        let timerInterval;
+        let flashcardFlipped = false;
+        let flashcardIndex = 0;
+        let currentQuestionIndex = 0;
+        let quizAnswers = [];
+        const flashcards = [
+            { front: 'Diuretic', back: 'A drug that increases urine output.' },
+            { front: 'Hypertension', back: 'High blood pressure.' }
+        ];
+
+        // 200 Sample MCQs (50 per category)
+        const questions = {
+            'Medical-Surgical': Array.from({length: 50}, (_, i) => ({
+                question: `MS Question ${i+1}: What is a key intervention for patient X?`,
+                options: ['A) Option A', 'B) Option B', 'C) Option C', 'D) Option D'],
+                correct: 'A',
+                rationale: 'Rationale for MS question.'
+            })),
+            'Mental Health': Array.from({length: 50}, (_, i) => ({
+                question: `MH Question ${i+1}: How to assess mental state?`,
+                options: ['A) Option A', 'B) Option B', 'C) Option C', 'D) Option D'],
+                correct: 'B',
+                rationale: 'Rationale for MH question.'
+            })),
+            'Midwifery': Array.from({length: 50}, (_, i) => ({
+                question: `Mid Question ${i+1}: Prenatal care tip?`,
+                options: ['A) Option A', 'B) Option B', 'C) Option C', 'D) Option D'],
+                correct: 'C',
+                rationale: 'Rationale for Mid question.'
+            })),
+            'Public Health': Array.from({length: 50}, (_, i) => ({
+                question: `PH Question ${i+1}: Community health strategy?`,
+                options: ['A) Option A', 'B) Option B', 'C) Option C', 'D) Option D'],
+                correct: 'D',
+                rationale: 'Rationale for PH question.'
+            })),
+            'Pharmacology': Array.from({length: 50}, (_, i) => ({
+                question: `Pharm Question ${i+1}: Drug interaction?`,
+                options: ['A) Option A', 'B) Option B', 'C) Option C', 'D) Option D'],
+                correct: 'A',
+                rationale: 'Rationale for Pharm question.'
+            })),
+            'Anatomy': Array.from({length: 50}, (_, i) => ({
+                question: `Anat Question ${i+1}: Body system function?`,
+                options: ['A) Option A', 'B) Option B', 'C) Option C', 'D) Option D'],
+                correct: 'B',
+                rationale: 'Rationale for Anat question.'
+            }))
+        };
+
+        // Load users from localStorage (simulate backend)
+        let users = JSON.parse(localStorage.getItem('users')) || [];
+
+        // Check online status
+        function checkOnline() {
+            if (!navigator.onLine) {
+                document.getElementById('offlineMessage').style.display = 'block';
+                document.querySelectorAll('button').forEach(btn => btn.disabled = true);
+            } else {
+                document.getElementById('offlineMessage').style.display = 'none';
+                document.querySelectorAll('button').forEach(btn => btn.disabled = false);
+            }
+        }
+
+        window.addEventListener('online', checkOnline);
+        window.addEventListener('offline', checkOnline);
+        checkOnline(); // Initial check
