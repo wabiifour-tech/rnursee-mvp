@@ -235,14 +235,4 @@
         function showScreen(screenId) {
             document.querySelectorAll('.screen, .login-screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
-            if (screenId === 'mcq') { startTimer(); loadQuestion(); }
-            else clearInterval(timerInterval);
-        }
-
-        function login() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const user = users.find(u => u.email === email && u.password === password);
-            if (user) {
-                userData = user;
-                document.getElementById('userName').textContent = user.name
+            if (screenId === 'mcq')
